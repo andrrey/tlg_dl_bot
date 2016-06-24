@@ -22,10 +22,10 @@ while True:
 	    msg = update.message
 	    if msg is not None:
 	    	fromuser = msg.sender
-	    	txt = msg.text.decode("utf-8")
-	    	username = fromuser.first_name.decode("utf-8")
+	    	txt = msg.text
+	    	username = fromuser.first_name
 	    	if fromuser.last_name is not None:
-	    		username += fromuser.last_name.decode("utf-8")
-	    	print('From: ' + username + ': ' + txt)	    	
-
+	    		username += fromuser.last_name
+	    	print('From: ' + username + ': ' + txt)
+	    	bot.send_message(msg.chat.id, "xxx")	    	
 	sleep(sleep_time)
