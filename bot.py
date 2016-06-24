@@ -21,7 +21,7 @@ while True:
 	    offset=update.update_id + 1
 	    msg = update.message
 	    if msg is not None:
-	    	fromuser = msg.from
+	    	fromuser = msg.sender
 	    	txt = msg.text.decode("utf-8")
 	    	username = fromuser.first_name.decode("utf-8")
 	    	if fromuser.last_name is not None:
