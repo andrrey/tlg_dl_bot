@@ -26,6 +26,9 @@ while True:
 	    	username = fromuser.first_name
 	    	if fromuser.last_name is not None:
 	    		username += fromuser.last_name
-	    	print('From: ' + username + ': ' + txt)
-	    	bot.send_message(msg.chat.id, "хуюшки")	    	
+	    	print('From ' + username + ': ' + txt)
+	    	if txt == 'obey':
+	    		bot.send_message(msg.chat.id, "хуюшки")
+	    	else:
+	    		bot.send_message(msg.chat.id, "я тупой бот")
 	sleep(sleep_time)
