@@ -27,13 +27,17 @@ def check_new_chat(id):
 		try:
 			cursor = db_conn.cursor()
 			cursor.execute("INSERT INTO chats (chat_id, room) VALUES (%s, %s)", (str(id), 'start'))			
+			
 			if cursor.lastrowid:
-	            print('last insert id', cursor.lastrowid)
+				print('last insert id', cursor.lastrowid)
 	        else:
-	            print('last insert id not found')
+	        	print('last insert id not found')
+
 	        db_conn.commit()
+	    
 	    except Error as error:
 	    	print(error)
+	    
 	    finally:
 	    	cursor.close()
 
