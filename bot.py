@@ -23,7 +23,24 @@ print(bot.username + 'is up and running')
 def check_new_chat(id):
 	db_conn.query("SELECT COUNT(*) FROM chats WHERE chat_id = \'" + str(id) + "\'")
 	dbr = db_conn.store_result()
-	print(type(dbr.fetch_row()[0][0]))
+	if('0' != dbr.fetch_row()[0][0]):
+		#db_conn.query("INSERT INTO chats (chat_id, room) VALUES (\'" + str(id) + "\', \'start\')")
+		try:
+			cursor = db_conn.cursor()
+			cursor.execute("INSERT INTO chats (chat_id, room) VALUES (%s, %s)", (str(id), 'start'))
+			
+			if cursor.lastrowid:
+	            print('last insert id', cursor.lastrowid)
+	        else:
+	            print('last insert id not found')
+
+	        db_conn.commit()
+
+	    except Error as error:
+	    	print(error)
+
+	    finally:
+	    	cursor.close()
 
 
 def parse_command(command):
@@ -36,26 +53,33 @@ def parse_scene(scene, id):
 
 offset=None
 
-while True:
-	updates = bot.get_updates(offset).wait()
-	for update in updates:
-	    print(update)
-	    offset=update.update_id + 1
-	    msg = update.message
-	    if msg is not None:
-	    	fromuser = msg.sender
-	    	txt = msg.text
-	    	check_new_chat(msg.chat.id)
-	    	if txt is not None:
-		    	humanname = fromuser.first_name
-		    	userid = fromuser.id
-		    	username = fromuser.username
-		    	if fromuser.last_name is not None:
-		    		humanname += ' ' + fromuser.last_name
-		    	print('From ' + humanname + ' ' + txt + ' (id ' + str(userid) + '): ' + txt)
-		    	if(username == botmaster):
-		    		if(parse_command(txt)):
-		    			continue
-		    		else:
-		    			bot.send_message(msg.chat.id, parse_scene(txt, userid))
-	sleep(sleep_time)
+try:
+	while True:
+		updates = bot.get_updates(offset).wait()
+		for update in updates:
+		    print(update)
+		    offset=update.update_id + 1
+		    msg = update.message
+		    if msg is not None:
+		    	fromuser = msg.sender
+		    	txt = msg.text
+		    	check_new_chat(msg.chat.id)
+		    	if txt is not None:
+			    	humanname = fromuser.first_name
+			    	userid = fromuser.id
+			    	username = fromuser.username
+			    	if fromuser.last_name is not None:
+			    		humanname += ' ' + fromuser.last_name
+			    	print('From ' + humanname + ' ' + txt + ' (id ' + str(userid) + '): ' + txt)
+			    	if(username == botmaster):
+			    		if(parse_command(txt)):
+			    			continue
+			    		else:
+			    			bot.send_message(msg.chat.id, parse_scene(txt, userid))
+		sleep(sleep_time)
+
+except Error as error:
+	print(error)
+
+finally:
+	db_conn.close()
