@@ -23,7 +23,7 @@ print(bot.username + 'is up and running')
 def check_new_chat(id):
 	db_conn.query("SELECT COUNT(*) FROM chats WHERE chat_id = \'" + str(id) + "\'")
 	dbr = db_conn.store_result()
-	if('0' != dbr.fetch_row()[0][0]):
+	if('0' == dbr.fetch_row()[0][0]):
 		try:
 			cursor = db_conn.cursor()
 			cursor.execute("INSERT INTO chats (chat_id, room) VALUES (%s, %s)", (str(id), 'start'))			
@@ -35,7 +35,7 @@ def check_new_chat(id):
 
 			db_conn.commit()
 		
-		except Error as error:
+		except MySQLError as error:
 			print(error)
 			
 		finally:
@@ -77,8 +77,8 @@ try:
 			    			bot.send_message(msg.chat.id, parse_scene(txt, userid))
 		sleep(sleep_time)
 
-except Error as error:
+except:
 	print(error)
 
 finally:
-	db_conn.close(1)
+	db_conn.close()
