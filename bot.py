@@ -20,6 +20,12 @@ bot.update_bot_info().wait()
 print(bot.username + 'is up and running')
 
 
+def check_new_chat(id):
+	db_conn.query("SELECT COUNT(*) FROM chats WHERE chat_id = \'" + str(id) + "\'")
+	dbr = db_conn.store_result()
+	print(dbr.fetch_row())
+
+
 def parse_command(command):
 	return False
 
@@ -33,12 +39,13 @@ offset=None
 while True:
 	updates = bot.get_updates(offset).wait()
 	for update in updates:
-	    #print(update)
+	    print(update)
 	    offset=update.update_id + 1
 	    msg = update.message
 	    if msg is not None:
 	    	fromuser = msg.sender
 	    	txt = msg.text
+	    	check_new_chat(msg.chat.id)
 	    	if txt is not None:
 		    	humanname = fromuser.first_name
 		    	userid = fromuser.id
