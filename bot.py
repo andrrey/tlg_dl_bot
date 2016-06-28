@@ -26,17 +26,9 @@ def check_new_chat(id):
 		cursor1 = db_conn.cursor()
 		cursor2 = db_conn.cursor()
 		cursor1.execute("SELECT COUNT(*) FROM chats WHERE chat_id = %s", (str(id),))
-		#dbr = db_conn.store_result()
-
-		#if('0' == dbr.fetch_row()[0][0]):
+		
 		if(0 == cursor1.fetchone()[0]):
 			cursor2.execute("INSERT INTO chats (chat_id, room) VALUES (%s, %s)", (str(id), 'start'))			
-
-			if cursor2.lastrowid:
-				print('last insert id', cursor.lastrowid)
-			else:
-				print('last insert id not found')
-
 			db_conn.commit()
 			
 	except MySQLError as error:
