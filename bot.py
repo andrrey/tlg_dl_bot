@@ -17,7 +17,7 @@ offset=None
 while True:
 	updates = bot.get_updates(offset).wait()
 	for update in updates:
-	    #print(update)
+	    print(update)
 	    offset=update.update_id + 1
 	    msg = update.message
 	    if msg is not None:
