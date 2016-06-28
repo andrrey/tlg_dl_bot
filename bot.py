@@ -34,11 +34,11 @@ def check_new_chat(id):
 	        	print('last insert id not found')
 
 	        db_conn.commit()
-	    
-	    except Error as error:
+		
+		except Error as error:
 	    	print(error)
 	    
-	    finally:
+		finally:
 	    	cursor.close()
 
 
