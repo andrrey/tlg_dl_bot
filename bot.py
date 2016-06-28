@@ -30,7 +30,7 @@ def check_new_chat(id):
 			
 			if cursor.lastrowid:
 				print('last insert id', cursor.lastrowid)
-	        else:
+			else:
 	        	print('last insert id not found')
 
 	        db_conn.commit()
