@@ -23,7 +23,7 @@ print(bot.username + 'is up and running')
 def check_new_chat(id):
 	db_conn.query("SELECT COUNT(*) FROM chats WHERE chat_id = \'" + str(id) + "\'")
 	dbr = db_conn.store_result()
-	print(dbr.fetch_row())
+	print(type(dbr.fetch_row()[0][0]))
 
 
 def parse_command(command):
