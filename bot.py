@@ -40,12 +40,13 @@ while True:
 	    	fromuser = msg.sender
 	    	txt = msg.text
 	    	if txt is not None:
-		    	username = fromuser.first_name
+		    	humanname = fromuser.first_name
 		    	userid = fromuser.id
+		    	username = fromuser.username
 		    	if fromuser.last_name is not None:
-		    		username += ' ' + fromuser.last_name
-		    	print('From ' + username + txt + ' (id ' + userid + '): ' + txt)
-		    	if(userid == botmaster):
+		    		humanname += ' ' + fromuser.last_name
+		    	print('From ' + humanname + txt + ' (id ' + userid + '): ' + txt)
+		    	if(username == botmaster):
 		    		if(parse_command(txt)):
 		    			continue
 		    		else:
