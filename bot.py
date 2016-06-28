@@ -39,14 +39,15 @@ while True:
 	    if msg is not None:
 	    	fromuser = msg.sender
 	    	txt = msg.text
-	    	username = fromuser.first_name
-	    	userid = fromuser.id
-	    	if fromuser.last_name is not None:
-	    		username += ' ' + fromuser.last_name
-	    	print('From ' + username + txt + ' (id ' + userid + '): ' + txt)
-	    	if(userid == botmaster):
-	    		if(parse_command(txt)):
-	    			continue
-	    		else:
-	    			bot.send_message(msg.chat.id, parse_scene(txt, userid))
+	    	if txt is not None:
+		    	username = fromuser.first_name
+		    	userid = fromuser.id
+		    	if fromuser.last_name is not None:
+		    		username += ' ' + fromuser.last_name
+		    	print('From ' + username + txt + ' (id ' + userid + '): ' + txt)
+		    	if(userid == botmaster):
+		    		if(parse_command(txt)):
+		    			continue
+		    		else:
+		    			bot.send_message(msg.chat.id, parse_scene(txt, userid))
 	sleep(sleep_time)
