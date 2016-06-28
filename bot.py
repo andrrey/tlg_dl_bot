@@ -36,10 +36,10 @@ def check_new_chat(id):
 			db_conn.commit()
 		
 		except Error as error:
-	    	print(error)
-	    
+			print(error)
+			
 		finally:
-	    	cursor.close()
+			cursor.close()
 
 
 def parse_command(command):
