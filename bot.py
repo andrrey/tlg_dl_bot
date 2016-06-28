@@ -12,7 +12,7 @@ config.read("config.cfg")
 db_host = config.get('DB', 'host')
 db_user = config.get('DB', 'user')
 db_pass = config.get('DB', 'password')
-db_database = 'telegrambot'
+db_database = 'tlg_bot'
 botmaster = config.get('Config', 'botmaster')
 db_conn = _mysql.connect(host=db_host, user=db_user, passwd=db_pass, db=db_database)
 bot = TelegramBot(config.get('Config', 'Token'))
@@ -45,7 +45,7 @@ while True:
 		    	username = fromuser.username
 		    	if fromuser.last_name is not None:
 		    		humanname += ' ' + fromuser.last_name
-		    	print('From ' + humanname + txt + ' (id ' + userid + '): ' + txt)
+		    	print('From ' + humanname + ' ' + txt + ' (id ' + str(userid) + '): ' + txt)
 		    	if(username == botmaster):
 		    		if(parse_command(txt)):
 		    			continue
