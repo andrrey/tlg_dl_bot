@@ -3,7 +3,8 @@
 from twx.botapi import TelegramBot
 from time import sleep
 import configparser
-import _mysql
+import MySQLdb
+#import _mysql
 
 sleep_time = 1
 
@@ -14,32 +15,36 @@ db_user = config.get('DB', 'user')
 db_pass = config.get('DB', 'password')
 db_database = 'tlg_bot'
 botmaster = config.get('Config', 'botmaster')
-db_conn = _mysql.connect(host=db_host, user=db_user, passwd=db_pass, db=db_database)
+db_conn = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_database)
 bot = TelegramBot(config.get('Config', 'Token'))
 bot.update_bot_info().wait()
 print(bot.username + 'is up and running')
 
 
 def check_new_chat(id):
-	db_conn.query("SELECT COUNT(*) FROM chats WHERE chat_id = \'" + str(id) + "\'")
-	dbr = db_conn.store_result()
-	if('0' == dbr.fetch_row()[0][0]):
-		try:
-			cursor = db_conn.cursor()
-			cursor.execute("INSERT INTO chats (chat_id, room) VALUES (%s, %s)", (str(id), 'start'))			
-			
-			if cursor.lastrowid:
+	try:
+		cursor1 = db_conn.cursor()
+		cursor1.execute("SELECT COUNT(*) FROM chats WHERE chat_id = %s", (str(id),))
+		#dbr = db_conn.store_result()
+
+		#if('0' == dbr.fetch_row()[0][0]):
+		if(0 == cursor1.fetchone()[0]):
+			cursor2 = db_conn.cursor()
+			cursor2.execute("INSERT INTO chats (chat_id, room) VALUES (%s, %s)", (str(id), 'start'))			
+
+			if cursor2.lastrowid:
 				print('last insert id', cursor.lastrowid)
 			else:
 				print('last insert id not found')
-
+				
 			db_conn.commit()
-		
-		except MySQLError as error:
-			print(error)
 			
-		finally:
-			cursor.close()
+	except MySQLError as error:
+		print(error)
+				
+	finally:
+		cursor1.close()
+		cursor2.close()
 
 
 def parse_command(command):
@@ -78,7 +83,7 @@ try:
 		sleep(sleep_time)
 
 except:
-	print(error)
+	raise
 
 finally:
 	db_conn.close()
