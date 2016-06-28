@@ -4,7 +4,6 @@ from twx.botapi import TelegramBot
 from time import sleep
 import configparser
 import MySQLdb
-#import _mysql
 
 sleep_time = 1
 
@@ -49,26 +48,6 @@ def parse_scene(scene, id):
 
 offset=None
 
-<<<<<<< HEAD
-while True:
-	updates = bot.get_updates(offset).wait()
-	for update in updates:
-	    print(update)
-	    offset=update.update_id + 1
-	    msg = update.message
-	    if msg is not None:
-	    	fromuser = msg.sender
-	    	txt = msg.text
-	    	username = fromuser.first_name
-	    	if fromuser.last_name is not None:
-	    		username += fromuser.last_name
-	    	print('From ' + username + ': ' + txt)
-	    	if txt == 'obey':
-	    		bot.send_message(msg.chat.id, "хуюшки")
-	    	else:
-	    		bot.send_message(msg.chat.id, "я тупой бот")
-	sleep(sleep_time)
-=======
 try:
 	while True:
 		updates = bot.get_updates(offset).wait()
@@ -99,4 +78,3 @@ except:
 
 finally:
 	db_conn.close()
->>>>>>> db
