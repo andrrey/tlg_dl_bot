@@ -57,7 +57,7 @@ def parse_scene(scene, cid):
         next_room_id = arr[1]
         print('End text: ' + end_text)
         print('Next rooms is ' + next_room_id)
-        if end_text == scene:
+        if end_text in scene:
             cursor.execute("SELECT room_text from rooms where room_id = %s", (next_room_id,))
             ret = cursor.fetchone()[0]
             print('Will return: ' + ret)
