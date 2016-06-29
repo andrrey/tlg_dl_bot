@@ -27,6 +27,7 @@ def check_new_chat(id):
 		cursor1.execute("SELECT COUNT(*) FROM chats WHERE chat_id = %s", (str(id),))
 		
 		if(0 == cursor1.fetchone()[0]):
+			print('will insert chat ID ' + str(id))
 			cursor2.execute("INSERT INTO chats (chat_id, room) VALUES (%s, %s)", (str(id), 'start'))			
 			db_conn.commit()
 			
