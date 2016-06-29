@@ -14,7 +14,7 @@ db_user = config.get('DB', 'user')
 db_pass = config.get('DB', 'password')
 db_database = 'tlg_bot'
 botmaster = config.get('Config', 'botmaster')
-db_conn = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_database)
+db_conn = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_database, charset='utf8')
 bot = TelegramBot(config.get('Config', 'Token'))
 bot.update_bot_info().wait()
 print(bot.username + ' is up and running')
@@ -26,7 +26,7 @@ def check_new_chat(id):
 		cursor2 = db_conn.cursor()
 		cursor1.execute("SELECT COUNT(*) FROM chats WHERE chat_id = %s", (str(id),))
 		
-		int count = cursor1.fetchone()[0]
+		count = cursor1.fetchone()[0]
 
 		if(0 == count):
 			print('will insert chat ID ' + str(id))
@@ -61,7 +61,7 @@ def parse_scene(scene, cid):
 			ret = cursor.fetchone()[0]
 			print('Will return: ' + ret)
 			cursor.execute("UPDATE chats set room = %s where chat_id = %s", (next_room_id, cid))
-			cursor.commit()
+			db_conn.commit()
 
 	except Exception as error:
 		print(error)
