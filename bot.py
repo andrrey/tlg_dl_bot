@@ -13,8 +13,9 @@ db_host = config.get('DB', 'host')
 db_user = config.get('DB', 'user')
 db_pass = config.get('DB', 'password')
 db_database = 'tlg_bot'
+db_charset = 'utf8'
 botmaster = config.get('Config', 'botmaster')
-db_conn = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_database, charset='utf8')
+db_conn = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_database, charset=db_charset)
 bot = TelegramBot(config.get('Config', 'Token'))
 bot.update_bot_info().wait()
 print(bot.username + ' is up and running')
@@ -78,11 +79,26 @@ def parse_command(command):
         return 'Команд нету пока'
 
 
+def db_connection():
+    global db_conn
+    try:
+        cursor = db_conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM chats")
+        res = cursor.fetchone()[0]
+    except Exception as e:
+        print("Connection to DB seems to be broken. Restoring...")
+        db_conn = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_database, charset=db_charset)
+
+
 offset = None
 
-try:
-    while True:
+#try:
+while True:
+    try:
         updates = bot.get_updates(offset).wait()
+        if updates is None:
+            continue
+        db_connection()
         for update in updates:
             print(update)
             offset = update.update_id + 1
@@ -106,10 +122,15 @@ try:
                     scene_text = parse_scene(txt, msg.chat.id)
                     if scene_text is not None:
                         bot.send_message(msg.chat.id, scene_text)
-        sleep(sleep_time)
+    except Exception as e:
+        print(e)
 
-except:
-    raise
+    sleep(sleep_time)
 
-finally:
-    db_conn.close()
+db_conn.close()
+
+#except:
+#    raise
+#
+#finally:
+#    db_conn.close()
