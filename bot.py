@@ -24,17 +24,16 @@ print(bot.username + ' is up and running')
 
 
 def check_new_chat(cid):
-    cursor1 = db_conn.cursor()
-    cursor2 = db_conn.cursor()
+    cursor = db_conn.cursor()
 
     try:
-        cursor1.execute("SELECT COUNT(*) FROM chats WHERE chat_id = %s", (str(cid),))
+        cursor.execute("SELECT COUNT(*) FROM chats WHERE chat_id = %s", (str(cid),))
 
-        count = cursor1.fetchone()[0]
+        count = cursor.fetchone()[0]
 
         if 0 == count:
             print('will insert chat ID ' + str(cid))
-            cursor2.execute("INSERT INTO chats (chat_id, room) VALUES (%s, %s)", (str(cid), 'start'))
+            cursor.execute("INSERT INTO chats (chat_id, room) VALUES (%s, %s)", (str(cid), 'start'))
             db_conn.commit()
         if count > 1:
             raise ValueError('Too many records for given chat_id!')
@@ -43,8 +42,7 @@ def check_new_chat(cid):
         print(error)
 
     finally:
-        cursor1.close()
-        cursor2.close()
+        cursor.close()
 
 
 def parse_scene(scene, cid):
@@ -61,7 +59,7 @@ def parse_scene(scene, cid):
         room_type = arr[2]
         end_delay = arr[3]
         print("Room type is %s", (room_type,))
-        if 0 == room_type:  # end with keyword
+        if 0 == room_type and scene is not None:  # end with keyword
             print('End text: ' + end_text)
             print('Next rooms is ' + next_room_id)
             if end_text.upper() in scene.upper():
@@ -97,6 +95,8 @@ def move_to_room(next_room_id, cid):
     cursor.execute("UPDATE chats set room = %s where chat_id = %s", (next_room_id, cid))
     if 1 == room_type:
         sleepers[cid] = datetime.now() + timedelta(seconds=end_delay)
+    else:
+        sleepers[cid] = None
     db_conn.commit()
     cursor.close()
     return ret
@@ -114,7 +114,9 @@ def db_connection():  # Detect broken DB connection and try to reconnect
         cursor.execute("SELECT COUNT(*) FROM chats")
         res = cursor.fetchone()[0]
     except Exception as e:
-        print("Connection to DB seems to be broken. Restoring...")
+        print("Connection to DB seems to be broken. Reason:")
+        print(e)
+        print("Restoring connection...")
         db_conn = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_database, charset=db_charset)
 
 
@@ -128,9 +130,11 @@ while True:
             print("Now " + tm_now.strftime("%A, %d. %B %Y %I:%M:%S%p"))
             for sleeping_chat in sleepers:
                 tm = sleepers[sleeping_chat]
-                print("Chat %s %s", (sleeping_chat, tm))
-                if tm_now >= tm:
-                    pass
+                if tm is not None:
+                    print("Chat " + str(sleeping_chat) + " " + tm.strftime("%A, %d. %B %Y %I:%M:%S%p"))
+                    if tm_now >= tm:
+                        print("It's time to move out of room for chat " + str(sleeping_chat))
+                        parse_scene(None, sleeping_chat)
         updates = bot.get_updates(offset).wait()
         if updates is None:  # ********** STAGE TWO - check new updates
             continue
