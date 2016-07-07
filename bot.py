@@ -127,7 +127,7 @@ while True:
         if sleepers is not None:  # ********** STAGE ONE - check current timers
             db_connection()
             tm_now = datetime.now()
-            print("Now " + tm_now.strftime("%A, %d. %B %Y %I:%M:%S%p"))
+            #print("Now " + tm_now.strftime("%A, %d. %B %Y %I:%M:%S%p"))
             for sleeping_chat in sleepers:
                 tm = sleepers[sleeping_chat]
                 if tm is not None:
