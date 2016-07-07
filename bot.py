@@ -58,10 +58,10 @@ def parse_scene(scene, cid):
         next_room_id = arr[1]
         room_type = arr[2]
         end_delay = arr[3]
-        print("Room type is %s", (room_type,))
+        print("Room type is", room_type)
         if 0 == room_type and scene is not None:  # end with keyword
             print('End text: ' + end_text)
-            print('Next rooms is ' + next_room_id)
+            print('Next room is ' + next_room_id)
             if end_text.upper() in scene.upper():
                 ret = move_to_room(next_room_id, cid)
         if 1 == room_type:  # end by time
