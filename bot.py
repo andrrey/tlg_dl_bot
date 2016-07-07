@@ -47,35 +47,28 @@ def check_new_chat(cid):
 
 def parse_scene(scene, cid):
     global sleepers
-    ret = None
     cursor = db_conn.cursor()
 
     try:
         room = get_current_room(cid)
-        cursor.execute("SELECT end_text, next_room_id, end_type, end_delay from rooms where room_id = %s", (room,))
-        arr = cursor.fetchone()
-        end_text = arr[0]
-        next_room_id = arr[1]
-        end_type = arr[2]
-        end_delay = arr[3]
+        cursor.execute("SELECT end_text, next_room_id, end_type from rooms where room_id = %s", (room,))
+        end_text, next_room_id, end_type = cursor.fetchone()
         print("Room type is", end_type)
         if 0 == end_type and scene is not None:  # end with keyword
             print('End text: ' + end_text)
             print('Next room is ' + next_room_id)
             if end_text.upper() in scene.upper():
-                ret = move_to_room(next_room_id, cid)
+                move_to_room(next_room_id, cid)
         if 1 == end_type:  # end by time
             print("This is room with timing")
             if datetime.now() >= sleepers[cid]:  # it's time to move on
-                ret = move_to_room(next_room_id, cid)
+                move_to_room(next_room_id, cid)
 
     except Exception as error:
         print(error)
 
     finally:
         cursor.close()
-
-    return ret
 
 
 def get_current_room(cid):
@@ -89,17 +82,24 @@ def get_current_room(cid):
 def move_to_room(next_room_id, cid):
     global sleepers
     cursor = db_conn.cursor()
-    cursor.execute("SELECT room_text, end_type, end_delay from rooms where room_id = %s", (next_room_id,))
-    ret, end_type, end_delay = cursor.fetchone()
-    print('Will return: ' + ret)
+    cursor.execute("SELECT room_text, end_type, end_delay, room_type from rooms where room_id = %s", (next_room_id,))
+    text, end_type, end_delay, room_type = cursor.fetchone()
     cursor.execute("UPDATE chats set room = %s where chat_id = %s", (next_room_id, cid))
+
+    # types of ending
     if 1 == end_type:
         sleepers[cid] = datetime.now() + timedelta(seconds=end_delay)
     else:
         sleepers[cid] = None
+
+    # types of return
+    if 0 == room_type:
+        print('Will return: ' + text)
+        bot.send_message(cid, text)
+    elif 1 == room_type:
+        print('Must return picture, but it not implemented yet')
     db_conn.commit()
     cursor.close()
-    return ret
 
 
 def parse_command(command):
@@ -134,9 +134,7 @@ while True:
                     print("Chat " + str(sleeping_chat) + " " + tm.strftime("%A, %d. %B %Y %I:%M:%S%p"))
                     if tm_now >= tm:
                         print("It's time to move out of room for chat " + str(sleeping_chat))
-                        scene_text = parse_scene(None, sleeping_chat)
-                        if scene_text is not None:
-                            bot.send_message(sleeping_chat, scene_text)
+                        parse_scene(None, sleeping_chat)
         updates = bot.get_updates(offset).wait()
         if updates is None:  # ********** STAGE TWO - check new updates
             continue
@@ -161,9 +159,7 @@ while True:
                         if command_text is not None:
                             bot.send_message(msg.chat.id, command_text)
                             continue
-                    scene_text = parse_scene(txt, msg.chat.id)
-                    if scene_text is not None:
-                        bot.send_message(msg.chat.id, scene_text)
+                    parse_scene(txt, msg.chat.id)
     except Exception as e:
         print(e)
 
