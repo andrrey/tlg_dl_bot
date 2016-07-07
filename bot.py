@@ -134,7 +134,9 @@ while True:
                     print("Chat " + str(sleeping_chat) + " " + tm.strftime("%A, %d. %B %Y %I:%M:%S%p"))
                     if tm_now >= tm:
                         print("It's time to move out of room for chat " + str(sleeping_chat))
-                        parse_scene(None, sleeping_chat)
+                        scene_text = parse_scene(None, sleeping_chat)
+                        if scene_text is not None:
+                            bot.send_message(sleeping_chat, scene_text)
         updates = bot.get_updates(offset).wait()
         if updates is None:  # ********** STAGE TWO - check new updates
             continue
