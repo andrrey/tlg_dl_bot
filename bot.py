@@ -4,6 +4,7 @@ from twx.botapi import TelegramBot
 from time import sleep
 import configparser
 import MySQLdb
+from datetime import datetime, timedelta
 
 sleep_time = 1
 
@@ -16,6 +17,7 @@ db_database = 'tlg_bot'
 db_charset = 'utf8'
 botmaster = config.get('Config', 'botmaster')
 db_conn = MySQLdb.connect(host=db_host, user=db_user, passwd=db_pass, db=db_database, charset=db_charset)
+sleepers = {}  # here we will store active timers for rooms
 bot = TelegramBot(config.get('Config', 'Token'))
 bot.update_bot_info().wait()
 print(bot.username + ' is up and running')
@@ -46,24 +48,28 @@ def check_new_chat(cid):
 
 
 def parse_scene(scene, cid):
+    global sleepers
     ret = None
     cursor = db_conn.cursor()
 
     try:
-        cursor.execute("SELECT room from chats where chat_id = %s", (cid,))
-        room = cursor.fetchone()[0]
-        cursor.execute("SELECT end_text, next_room_id from rooms where room_id = %s", (room,))
+        room = get_current_room(cid)
+        cursor.execute("SELECT end_text, next_room_id, room_type, end_delay from rooms where room_id = %s", (room,))
         arr = cursor.fetchone()
         end_text = arr[0]
         next_room_id = arr[1]
-        print('End text: ' + end_text)
-        print('Next rooms is ' + next_room_id)
-        if end_text.upper() in scene.upper():
-            cursor.execute("SELECT room_text from rooms where room_id = %s", (next_room_id,))
-            ret = cursor.fetchone()[0]
-            print('Will return: ' + ret)
-            cursor.execute("UPDATE chats set room = %s where chat_id = %s", (next_room_id, cid))
-            db_conn.commit()
+        room_type = arr[2]
+        end_delay = arr[3]
+        print("Room type is %s", (room_type,))
+        if 0 == room_type:  # end with keyword
+            print('End text: ' + end_text)
+            print('Next rooms is ' + next_room_id)
+            if end_text.upper() in scene.upper():
+                ret = move_to_room(next_room_id, cid)
+        if 1 == room_type:  # end by time
+            print("This is room with timing")
+            if datetime.now() >= sleepers[cid]:  # it's time to move on
+                ret = move_to_room(next_room_id, cid)
 
     except Exception as error:
         print(error)
@@ -74,12 +80,34 @@ def parse_scene(scene, cid):
     return ret
 
 
+def get_current_room(cid):
+    cursor = db_conn.cursor()
+    cursor.execute("SELECT room from chats where chat_id = %s", (cid,))
+    room = cursor.fetchone()[0]
+    cursor.close()
+    return room
+
+
+def move_to_room(next_room_id, cid):
+    global sleepers
+    cursor = db_conn.cursor()
+    cursor.execute("SELECT room_text, room_type, end_delay from rooms where room_id = %s", (next_room_id,))
+    ret, room_type, end_delay = cursor.fetchone()
+    print('Will return: ' + ret)
+    cursor.execute("UPDATE chats set room = %s where chat_id = %s", (next_room_id, cid))
+    if 1 == room_type:
+        sleepers[cid] = datetime.now() + timedelta(seconds=end_delay)
+    db_conn.commit()
+    cursor.close()
+    return ret
+
+
 def parse_command(command):
     if '/help' == command:
         return 'Команд нету пока'
 
 
-def db_connection():
+def db_connection():  # Detect broken DB connection and try to reconnect
     global db_conn
     try:
         cursor = db_conn.cursor()
@@ -92,11 +120,19 @@ def db_connection():
 
 offset = None
 
-#try:
 while True:
     try:
+        if sleepers is not None:  # ********** STAGE ONE - check current timers
+            db_connection()
+            tm_now = datetime.now()
+            print("Now %s", (tm_now,))
+            for sleeping_chat in sleepers:
+                tm = sleepers[sleeping_chat]
+                print("Chat %s %s", (sleeping_chat, tm))
+                if tm_now >= tm:
+                    pass
         updates = bot.get_updates(offset).wait()
-        if updates is None:
+        if updates is None:  # ********** STAGE TWO - check new updates
             continue
         db_connection()
         for update in updates:
@@ -129,8 +165,3 @@ while True:
 
 db_conn.close()
 
-#except:
-#    raise
-#
-#finally:
-#    db_conn.close()
