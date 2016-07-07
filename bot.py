@@ -52,19 +52,19 @@ def parse_scene(scene, cid):
 
     try:
         room = get_current_room(cid)
-        cursor.execute("SELECT end_text, next_room_id, room_type, end_delay from rooms where room_id = %s", (room,))
+        cursor.execute("SELECT end_text, next_room_id, end_type, end_delay from rooms where room_id = %s", (room,))
         arr = cursor.fetchone()
         end_text = arr[0]
         next_room_id = arr[1]
-        room_type = arr[2]
+        end_type = arr[2]
         end_delay = arr[3]
-        print("Room type is", room_type)
-        if 0 == room_type and scene is not None:  # end with keyword
+        print("Room type is", end_type)
+        if 0 == end_type and scene is not None:  # end with keyword
             print('End text: ' + end_text)
             print('Next room is ' + next_room_id)
             if end_text.upper() in scene.upper():
                 ret = move_to_room(next_room_id, cid)
-        if 1 == room_type:  # end by time
+        if 1 == end_type:  # end by time
             print("This is room with timing")
             if datetime.now() >= sleepers[cid]:  # it's time to move on
                 ret = move_to_room(next_room_id, cid)
@@ -89,11 +89,11 @@ def get_current_room(cid):
 def move_to_room(next_room_id, cid):
     global sleepers
     cursor = db_conn.cursor()
-    cursor.execute("SELECT room_text, room_type, end_delay from rooms where room_id = %s", (next_room_id,))
-    ret, room_type, end_delay = cursor.fetchone()
+    cursor.execute("SELECT room_text, end_type, end_delay from rooms where room_id = %s", (next_room_id,))
+    ret, end_type, end_delay = cursor.fetchone()
     print('Will return: ' + ret)
     cursor.execute("UPDATE chats set room = %s where chat_id = %s", (next_room_id, cid))
-    if 1 == room_type:
+    if 1 == end_type:
         sleepers[cid] = datetime.now() + timedelta(seconds=end_delay)
     else:
         sleepers[cid] = None
