@@ -103,8 +103,7 @@ def move_to_room(next_room_id, cid):
         print('Will return photo ' + text)
         file = open(text, 'rb')
         file_info = InputFileInfo(text, file, 'image/jpg')  # TODO: 1: Strip file name; 2: not JPG only
-        InputFile('photo', file_info)
-        bot.send_photo(cid, InputFile)
+        bot.send_photo(cid, InputFile('photo', file_info))
 
     db_conn.commit()
     cursor.close()
