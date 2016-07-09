@@ -6,6 +6,9 @@ import configparser
 import MySQLdb
 from datetime import datetime, timedelta
 
+from twx.botapi.botapi import InputFileInfo
+from twx.botapi.botapi import InputFile
+
 sleep_time = 1
 
 config = configparser.ConfigParser()
@@ -97,7 +100,12 @@ def move_to_room(next_room_id, cid):
         print('Will return: ' + text)
         bot.send_message(cid, text)
     elif 1 == room_type:
-        print('Must return picture, but it not implemented yet')
+        print('Will return photo ' + text)
+        file = open(text, 'rb')
+        file_info = InputFileInfo(text, file, 'image/jpg')  # TODO: 1: Strip file name; 2: not JPG only
+        InputFile('photo', file_info)
+        bot.send_photo(cid, InputFile)
+
     db_conn.commit()
     cursor.close()
 
