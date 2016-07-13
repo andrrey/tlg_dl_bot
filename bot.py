@@ -38,6 +38,7 @@ def check_new_chat(cid):
             print('will insert chat ID ' + str(cid))
             cursor.execute("INSERT INTO chats (chat_id, room) VALUES (%s, %s)", (str(cid), 'start'))
             db_conn.commit()
+            move_to_room('start', cid)
         if count > 1:
             raise ValueError('Too many records for given chat_id!')
 
